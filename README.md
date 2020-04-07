@@ -50,3 +50,5 @@ An example of finding the shortest path through the maze using Q-learning can be
 
 ![Solving 20x20 maze with loops and portals using Q-Learning](http://i.giphy.com/rfazKQngdaja8.gif)
 
+## Notes
+If you want to add a different maze configuration duplicate one of the classes at the bottom of `maze_env.py` and then add a register function to match in `__init__.py`.
