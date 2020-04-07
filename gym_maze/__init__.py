@@ -34,6 +34,13 @@ register(
 )
 
 register(
+    id='maze-random-20x20-v0',
+    entry_point='gym_maze.envs:MazeEnvRandom20x20',
+    max_episode_steps=10000,
+    nondeterministic=True,
+)
+
+register(
     id='maze-sample-3x3-v0',
     entry_point='gym_maze.envs:MazeEnvSample3x3',
     max_episode_steps=1000,
