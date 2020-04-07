@@ -70,6 +70,7 @@ class MazeEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
+    # TODO: Adjust the way the reward is calculated
     def step(self, action):
         if isinstance(action, int):
             self.maze_view.move_robot(self.ACTION[action])

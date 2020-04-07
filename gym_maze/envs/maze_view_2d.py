@@ -60,6 +60,9 @@ class MazeView2D:
             # show the portals
             self.__draw_portals()
 
+            # show the constraints
+            self.__draw_constraints()
+
             # show the robot
             self.__draw_robot()
 
@@ -125,6 +128,7 @@ class MazeView2D:
             self.__draw_entrance()
             self.__draw_goal()
             self.__draw_portals()
+            self.__draw_constraints()
             self.__draw_robot()
 
 
@@ -226,6 +230,14 @@ class MazeView2D:
             for location in portal.locations:
                 self.__colour_cell(location, colour=colour, transparency=transparency)
 
+    def __draw_constraints(self, transparency=235):
+
+        if self.__enable_render is False:
+            return
+
+        for constraint in self.maze.constraints:
+            self.__colour_cell(constraint.location, colour=(0, 255, 0), transparency=transparency)
+
     def __colour_cell(self, cell, colour, transparency):
 
         if self.__enable_render is False:
@@ -298,6 +310,8 @@ class Maze:
         self.__portals_dict = dict()
         self.__portals = []
         self.num_portals = num_portals
+        self.__constraints_dict = {}
+        self.__constraints = []
 
         # Use existing one if exists
         if self.maze_cells is not None:
@@ -475,6 +489,27 @@ class Maze:
             return self.__portals_dict[cell]
         return None
 
+    def is_constraint(self, cell):
+        return tuple(cell) in self.__constraints_dict
+
+    @property
+    def constraints(self):
+        return tuple(self.__constraints)
+
+    def get_constraint(self, cell):
+        if cell in self.__constraints_dict:
+            return self.__constraints_dict[cell]
+        return None
+
+    def add_constraint(self, cost, location):
+        new_constraint = Constraint(cost, location)
+        self.__constraints.append(new_constraint)
+        self.__constraints_dict[location] = new_constraint
+
+    def remove_constraint(self, location):
+        self.__constraints = [c for c in self.__constraints if c.location != location]
+        removed = self.__constraints_dict.pop(location, None)
+
     @property
     def MAZE_W(self):
         return int(self.maze_size[0])
@@ -563,6 +598,30 @@ class Portal:
     @property
     def locations(self):
         return self.__locations
+
+class Constraint:
+
+    def __init__(self, cost, location):
+
+        self.__cost = 0
+        self.__location = tuple()
+        if isinstance(cost, (int, float)):
+            self.__cost = cost
+        else:
+            raise ValueError("cost must be either an int or a float.")
+
+        if isinstance(location, (tuple, list)):
+            self.__location = tuple(location)
+        else:
+            raise ValueError("location must be either a list or a tuple.")
+
+    @property
+    def cost(self):
+        return self.__cost
+
+    @property
+    def location(self):
+        return self.__location
 
 
 if __name__ == "__main__":
