@@ -82,7 +82,16 @@ class MazeEnv(gym.Env):
             done = True
         else:
             reward = -0.1/(self.maze_size[0]*self.maze_size[1])
-            done = False
+            if self.maze_view.maze.is_constraint(self.maze_view.robot):
+                # Additive reward augmentation
+                # reward += self.maze_view.maze.get_constraint(tuple(self.maze_view.robot)).cost
+                # done = False
+
+                # Set reward to maximum negative (failure)
+                reward = -1
+                done = True
+            else:
+                done = False
 
         self.state = self.maze_view.robot
 
