@@ -36,6 +36,10 @@ class MazeView2D:
             self.screen = pygame.display.set_mode(screen_size)
             self.__screen_size = tuple(map(sum, zip(screen_size, (-1, -1))))
 
+        # Keep track of visited squares
+        self.visited = {}
+        self.reset_visited()
+
         # Set the starting point
         self.__entrance = np.zeros(2, dtype=int)
 
@@ -109,11 +113,19 @@ class MazeView2D:
                 self.__robot = np.array(self.maze.get_portal(tuple(self.robot)).teleport(tuple(self.robot)))
             self.__draw_robot(transparency=255)
 
+            self.visited[tuple(self.robot)] += 1
+
     def reset_robot(self):
 
         self.__draw_robot(transparency=0)
         self.__robot = np.zeros(2, dtype=int)
         self.__draw_robot(transparency=255)
+        self.reset_visited()
+
+    def reset_visited(self):
+        for i in range(self.maze.MAZE_W):
+            for j in range(self.maze.MAZE_H):
+                self.visited[(i, j)] = 0
 
     def __controller_update(self):
         if not self.__game_over:
@@ -125,6 +137,7 @@ class MazeView2D:
     def __view_update(self, mode="human"):
         if not self.__game_over:
             # update the robot's position
+            self.__draw_path()
             self.__draw_entrance()
             self.__draw_goal()
             self.__draw_portals()
@@ -138,6 +151,23 @@ class MazeView2D:
 
             if mode == "human":
                 pygame.display.flip()
+
+            elif mode == "grid":
+                pygame.display.flip()
+
+                font = pygame.font.SysFont('arial', 18)
+                for x in range(self.maze_size[0]):
+                    x_scaled = int(x * self.CELL_W + 0.5 + 1 + self.CELL_W / 2)
+                    for y in range(self.maze_size[1]):
+                        y_scaled = int(y * self.CELL_H + 0.5 + 1 + self.CELL_H / 2)
+
+                        text = "{},{}".format(x, y)
+                        text_font = font.render(text, True, (0, 0, 0))
+                        rect = text_font.get_rect()
+                        rect.center = (x_scaled, y_scaled)
+                        self.screen.blit(text_font, rect)
+
+                pygame.display.update()
 
             return np.flipud(np.rot90(pygame.surfarray.array3d(pygame.display.get_surface())))
 
@@ -238,6 +268,18 @@ class MazeView2D:
         for constraint in self.maze.constraints:
             self.__colour_cell(constraint.location, colour=(0, 255, 0), transparency=transparency)
 
+    def __draw_path(self, transparency=235):
+
+        if self.__enable_render is False:
+            return
+
+        # Show path
+        for key, value in self.visited.items():
+            if value > 0:
+                self.__colour_cell(key, (200, 200, 200), transparency)
+            else:
+                self.__colour_cell(key, (255, 255, 255), transparency)
+
     def __colour_cell(self, cell, colour, transparency):
 
         if self.__enable_render is False:
@@ -248,9 +290,10 @@ class MazeView2D:
 
         x = int(cell[0] * self.CELL_W + 0.5 + 1)
         y = int(cell[1] * self.CELL_H + 0.5 + 1)
-        w = int(self.CELL_W + 0.5 - 1)
-        h = int(self.CELL_H + 0.5 - 1)
+        w = int(self.CELL_W + - 1)
+        h = int(self.CELL_H + - 1)
         pygame.draw.rect(self.maze_layer, colour + (transparency,), (x, y, w, h))
+
 
     @property
     def maze(self):
